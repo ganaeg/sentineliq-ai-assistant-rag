@@ -24,28 +24,32 @@ public class RecordService {
         existing.setDescription(newRecord.getDescription());
         existing.setStatus(newRecord.getStatus());
         existing.setPriority(newRecord.getPriority());
+
+        // ✅ IMPORTANT for Day 7
+        existing.setDueDate(newRecord.getDueDate());
+
         existing.setUpdatedAt(java.time.LocalDateTime.now());
 
         return repository.save(existing);
     }
 
-    // ✅ SOFT DELETE (mark as deleted instead of removing)
+    // ✅ SOFT DELETE
     public void softDelete(Long id) {
         Record record = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Record not found"));
 
-        record.setStatus("DELETED"); // simple soft delete
+        record.setStatus("DELETED");
         record.setUpdatedAt(java.time.LocalDateTime.now());
 
         repository.save(record);
     }
 
-    // ✅ SEARCH (uses your repository query)
+    // ✅ SEARCH
     public List<Record> search(String keyword) {
         return repository.searchByTitle(keyword);
     }
 
-    // ✅ STATS (basic dashboard)
+    // ✅ STATS
     public Map<String, Long> getStats() {
         List<Record> all = repository.findAll();
 
