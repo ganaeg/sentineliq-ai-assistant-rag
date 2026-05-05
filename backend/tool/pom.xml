@@ -5,69 +5,67 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Spring Boot Parent -->
+    <!-- ✅ Spring Boot Parent -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.13</version>
+        <version>3.2.5</version> <!-- stable version -->
         <relativePath/>
     </parent>
 
-    <!-- Project Info -->
+    <!-- ✅ Project Info -->
     <groupId>com.internship</groupId>
     <artifactId>tool</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>tool</name>
     <description>AI Assistant Tool</description>
 
-    <!-- Java Version -->
+    <!-- ✅ Java Version -->
     <properties>
         <java.version>17</java.version>
     </properties>
 
-    <!-- Dependencies -->
+    <!-- ✅ Dependencies -->
     <dependencies>
 
-        <!-- Web -->
+        <!-- 🌐 Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- JPA -->
+        <!-- 🗄️ JPA -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- Flyway -->
+        <!-- 🔁 Flyway -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
         </dependency>
 
-        <!-- PostgreSQL (for later use) -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- ✅ H2 Database (FOR NOW - DEV) -->
+        <!-- 🧪 H2 DB -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Lombok -->
+        <!-- 🔐 Security -->
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- Testing -->
+        <!-- 🔍 AOP (for Audit Logging) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- 🧪 TEST (VERY IMPORTANT – fixes your error) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -76,7 +74,7 @@
 
     </dependencies>
 
-    <!-- Build Plugins -->
+    <!-- ✅ Build -->
     <build>
         <plugins>
 
