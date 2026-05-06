@@ -1,9 +1,9 @@
 package com.internship.tool.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.internship.tool.entity.AuditLog;
 import com.internship.tool.repository.AuditLogRepository;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,42 +18,40 @@ public class AuditAspect {
     @Autowired
     private AuditLogRepository repository;
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
+
+    public AuditAspect() {
+        this.mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // ✅ Fix for LocalDateTime
+    }
 
     @Around("execution(* com.internship.tool.service.*.*(..))")
     public Object logAudit(ProceedingJoinPoint joinPoint) throws Throwable {
 
-        System.out.println("🔥 AUDIT TRIGGERED: " + joinPoint.getSignature().getName());
+        String methodName = joinPoint.getSignature().getName();
 
-        Object result;
-        String oldValue = null;
-        String newValue = null;
-
-        try {
-            // capture input (old value)
-            Object[] args = joinPoint.getArgs();
-            if (args.length > 0) {
-                oldValue = mapper.writeValueAsString(args[0]);
-            }
-
-            // execute method
-            result = joinPoint.proceed();
-
-            // capture output (new value)
-            newValue = mapper.writeValueAsString(result);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            result = joinPoint.proceed();
+        // ❌ Skip read methods
+        if (methodName.toLowerCase().contains("get") ||
+            methodName.toLowerCase().contains("search")) {
+            return joinPoint.proceed();
         }
+
+        Object result = joinPoint.proceed();
 
         try {
             AuditLog log = new AuditLog();
             log.setEntityType("RECORD");
-            log.setAction(joinPoint.getSignature().getName());
-            log.setEntityId(1L); // simple for now
-            log.setOldValue(oldValue);
-            log.setNewValue(newValue);
+            log.setAction(methodName);
+            log.setEntityId(0L);
+            log.setOldValue("N/A");
+
+            // ✅ SAFE JSON conversion
+            try {
+                log.setNewValue(mapper.writeValueAsString(result));
+            } catch (Exception e) {
+                log.setNewValue("SERIALIZATION_FAILED");
+            }
+
             log.setCreatedAt(LocalDateTime.now());
 
             repository.save(log);
