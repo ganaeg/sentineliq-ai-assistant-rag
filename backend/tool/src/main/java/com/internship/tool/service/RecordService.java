@@ -27,6 +27,7 @@ public class RecordService {
 
     // ✅ UPDATE
     public Record update(Long id, Record newRecord) {
+
         Record existing = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Record not found"));
 
@@ -40,8 +41,9 @@ public class RecordService {
         return repository.save(existing);
     }
 
-    // ✅ DELETE (Soft)
+    // ✅ DELETE (Soft Delete)
     public Record softDelete(Long id) {
+
         Record record = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Record not found"));
 
@@ -56,21 +58,39 @@ public class RecordService {
         return repository.searchByTitle(keyword);
     }
 
-    // ✅ FILTER (Day 9 Dev 3)
-    public List<Record> filter(String status, LocalDate startDate, LocalDate endDate) {
-        return repository.filterRecords(status, startDate, endDate);
+    // ✅ FILTER
+    public List<Record> filter(String status,
+                               LocalDate startDate,
+                               LocalDate endDate) {
+
+        return repository.filterRecords(
+                status,
+                startDate,
+                endDate
+        );
     }
 
     // ✅ STATS
     public Map<String, Long> getStats() {
+
         List<Record> all = repository.findAll();
 
         long total = all.size();
-        long open = all.stream().filter(r -> "OPEN".equalsIgnoreCase(r.getStatus())).count();
-        long closed = all.stream().filter(r -> "CLOSED".equalsIgnoreCase(r.getStatus())).count();
-        long deleted = all.stream().filter(r -> "DELETED".equalsIgnoreCase(r.getStatus())).count();
+
+        long open = all.stream()
+                .filter(r -> "OPEN".equalsIgnoreCase(r.getStatus()))
+                .count();
+
+        long closed = all.stream()
+                .filter(r -> "CLOSED".equalsIgnoreCase(r.getStatus()))
+                .count();
+
+        long deleted = all.stream()
+                .filter(r -> "DELETED".equalsIgnoreCase(r.getStatus()))
+                .count();
 
         Map<String, Long> stats = new HashMap<>();
+
         stats.put("total", total);
         stats.put("open", open);
         stats.put("closed", closed);
@@ -79,8 +99,13 @@ public class RecordService {
         return stats;
     }
 
-    // ✅ PAGINATION + SORTING
-    public Page<Record> getAllRecords(int page, int size, String sortBy, String sortDir) {
+    // ✅ PAGINATION + SORTING + PERFORMANCE OPTIMIZATION
+    public Page<Record> getAllRecords(
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
 
         Sort sort = sortDir.equalsIgnoreCase("asc")
                 ? Sort.by(sortBy).ascending()
@@ -88,7 +113,8 @@ public class RecordService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        return repository.findAll(pageable);
+        // ✅ Optimized Query
+        return repository.findAllOptimized(pageable);
     }
 
     // ✅ CSV EXPORT

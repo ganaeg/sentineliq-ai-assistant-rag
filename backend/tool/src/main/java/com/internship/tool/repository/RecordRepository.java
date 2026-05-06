@@ -1,11 +1,12 @@
 package com.internship.tool.repository;
 
 import com.internship.tool.entity.Record;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,7 +18,7 @@ public interface RecordRepository extends JpaRepository<Record, Long> {
     @Query("SELECT r FROM Record r WHERE LOWER(r.title) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Record> searchByTitle(@Param("keyword") String keyword);
 
-    // ✅ FILTER (Day 9 Dev 3)
+    // ✅ FILTER
     @Query("SELECT r FROM Record r WHERE " +
             "(:status IS NULL OR r.status = :status) AND " +
             "(:startDate IS NULL OR r.dueDate >= :startDate) AND " +
@@ -28,11 +29,15 @@ public interface RecordRepository extends JpaRepository<Record, Long> {
             @Param("endDate") LocalDate endDate
     );
 
-    // ✅ REQUIRED FOR SCHEDULER (ADD BACK THESE 👇)
+    // ✅ PERFORMANCE OPTIMIZED QUERY
+    @Query("SELECT r FROM Record r")
+    Page<Record> findAllOptimized(Pageable pageable);
+
+    // ✅ REQUIRED FOR SCHEDULER
     List<Record> findByDueDateBeforeAndStatusNot(LocalDate date, String status);
 
     List<Record> findByDueDateBetween(LocalDate start, LocalDate end);
 
-    // Optional
+    // ✅ OPTIONAL
     List<Record> findByStatus(String status);
 }
