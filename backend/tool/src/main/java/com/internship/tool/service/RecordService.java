@@ -18,18 +18,38 @@ public class RecordService {
     @Autowired
     private RecordRepository repository;
 
+    // ✅ EMAIL SERVICE
+    @Autowired
+    private EmailService emailService;
+
     // ✅ CREATE
     public Record save(Record record) {
+
         record.setCreatedAt(LocalDateTime.now());
         record.setUpdatedAt(LocalDateTime.now());
-        return repository.save(record);
+
+        Record saved = repository.save(record);
+
+        // ✅ SEND EMAIL AFTER CREATE
+        emailService.sendEmail(
+                "ganabs0819@gmail.com",
+                "New Record Created",
+                "Record Created Successfully\n\n"
+                        + "Title: " + saved.getTitle()
+                        + "\nDescription: " + saved.getDescription()
+                        + "\nStatus: " + saved.getStatus()
+                        + "\nPriority: " + saved.getPriority()
+        );
+
+        return saved;
     }
 
     // ✅ UPDATE
     public Record update(Long id, Record newRecord) {
 
         Record existing = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Record not found"));
+                .orElseThrow(() ->
+                        new RuntimeException("Record not found"));
 
         existing.setTitle(newRecord.getTitle());
         existing.setDescription(newRecord.getDescription());
@@ -38,19 +58,42 @@ public class RecordService {
         existing.setDueDate(newRecord.getDueDate());
         existing.setUpdatedAt(LocalDateTime.now());
 
-        return repository.save(existing);
+        Record updated = repository.save(existing);
+
+        // ✅ SEND EMAIL AFTER UPDATE
+        emailService.sendEmail(
+                "ganabs0819@gmail.com",
+                "Record Updated",
+                "Record Updated Successfully\n\n"
+                        + "Title: " + updated.getTitle()
+                        + "\nNew Status: " + updated.getStatus()
+                        + "\nPriority: " + updated.getPriority()
+        );
+
+        return updated;
     }
 
     // ✅ DELETE (Soft Delete)
     public Record softDelete(Long id) {
 
         Record record = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Record not found"));
+                .orElseThrow(() ->
+                        new RuntimeException("Record not found"));
 
         record.setStatus("DELETED");
         record.setUpdatedAt(LocalDateTime.now());
 
-        return repository.save(record);
+        Record deleted = repository.save(record);
+
+        // ✅ SEND EMAIL AFTER DELETE
+        emailService.sendEmail(
+                "ganabs0819@gmail.com",
+                "Record Deleted",
+                "Record Soft Deleted Successfully\n\n"
+                        + "Title: " + deleted.getTitle()
+        );
+
+        return deleted;
     }
 
     // ✅ SEARCH
@@ -78,15 +121,18 @@ public class RecordService {
         long total = all.size();
 
         long open = all.stream()
-                .filter(r -> "OPEN".equalsIgnoreCase(r.getStatus()))
+                .filter(r ->
+                        "OPEN".equalsIgnoreCase(r.getStatus()))
                 .count();
 
         long closed = all.stream()
-                .filter(r -> "CLOSED".equalsIgnoreCase(r.getStatus()))
+                .filter(r ->
+                        "CLOSED".equalsIgnoreCase(r.getStatus()))
                 .count();
 
         long deleted = all.stream()
-                .filter(r -> "DELETED".equalsIgnoreCase(r.getStatus()))
+                .filter(r ->
+                        "DELETED".equalsIgnoreCase(r.getStatus()))
                 .count();
 
         Map<String, Long> stats = new HashMap<>();
@@ -99,7 +145,7 @@ public class RecordService {
         return stats;
     }
 
-    // ✅ PAGINATION + SORTING + PERFORMANCE OPTIMIZATION
+    // ✅ PAGINATION + SORTING + PERFORMANCE
     public Page<Record> getAllRecords(
             int page,
             int size,
@@ -111,9 +157,9 @@ public class RecordService {
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
 
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable =
+                PageRequest.of(page, size, sort);
 
-        // ✅ Optimized Query
         return repository.findAllOptimized(pageable);
     }
 
